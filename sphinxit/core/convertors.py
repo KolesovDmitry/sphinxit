@@ -348,7 +348,7 @@ class OptionsCtx(CtxMixin):
                 )
             )
 
-    def get_ranker(self):
+    def is_valid_ranker(self):
         ranker = self.params
         valid_rankers = (
             'proximity_bm25',
@@ -359,9 +359,19 @@ class OptionsCtx(CtxMixin):
             'matchany',
             'fieldmask',
             'sph04',
-            'expr',
         )
-        if not ranker in valid_rankers:
+        if ranker in valid_rankers:
+            return True
+
+        # Simple check for 'expr' ranker
+        if ranker.strip()[:4] == 'expr' and ranker.strip()[-1] == ')':
+            return True
+
+        return False
+
+    def get_ranker(self):
+        ranker = self.params
+        if not self.is_valid_ranker():
             return self.__exit__(
                 exc_val=SphinxQLSyntaxException(
                     '%s is unknown ranker. '
